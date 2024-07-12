@@ -12,6 +12,10 @@ app.use(express.static('public'));
 mongoose.connect("mongodb://localhost:27017/todo", {
   useNewUrlParser: true,
   useUnifiedTopology: true
+}).then(() => {
+  console.log("Connected to MongoDB");
+}).catch(err => {
+  console.error("Error connecting to MongoDB:", err);
 });
 
 // Define Schema and Model
@@ -31,27 +35,32 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.post("/", function(req, res) {
+app.post("/", async (req, res) => {
   const itemName = req.body.ele1;
   const todo4 = new Item({ name: itemName });
-  todo4.save();
-  res.redirect("/");
+
+  try {
+    await todo4.save();
+    res.redirect("/");
+  } catch (err) {
+    console.log("Error saving item:", err);
+    res.status(500).send("Error saving item.");
+  }
 });
 
-app.post("/delete/:itemId", function(req, res) {
+app.post("/delete/:itemId", async (req, res) => {
   const itemId = req.params.itemId;
 
-  Item.findByIdAndDelete(itemId)
-    .then(() => {
-      console.log("Item deleted successfully");
-      res.redirect("/");
-    })
-    .catch(err => {
-      console.log("Error deleting item:", err);
-      res.status(500).send("Error deleting item.");
-    });
+  try {
+    await Item.findByIdAndDelete(itemId);
+    console.log("Item deleted successfully");
+    res.redirect("/");
+  } catch (err) {
+    console.log("Error deleting item:", err);
+    res.status(500).send("Error deleting item.");
+  }
 });
 
 app.listen(17000, function () {
-  console.log("Server is running on port 8000");
+  console.log("Server is running on port 17000");
 });
